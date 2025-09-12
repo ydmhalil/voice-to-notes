@@ -38,14 +38,4 @@ Akıllı Ses Notu Asistanı (MVP)
 - "Transkribe & Özetle" butonuna tıkla.
 - Sonuçları ekranda görüntüle ve istersen PDF/TXT olarak indir.
 
-## Deployment
-- Vercel ile kolayca deploy edebilirsin:
-	```bash
-	npm install -g vercel
-	vercel login
-	vercel --prod
-	```
-- Environment değişkenlerini Vercel dashboard üzerinden eklemeyi unutma.
 
-## Lisans
-MIT
