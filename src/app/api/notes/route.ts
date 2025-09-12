@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const body = await req.json();
-  const { transcript, summary } = body;
+  const { transcript, summary, tags, folder } = body;
   if (!transcript || !summary) {
     return NextResponse.json({ error: "Eksik veri" }, { status: 400 });
   }
@@ -38,6 +38,8 @@ export async function POST(req: NextRequest) {
     data: {
       transcript,
       summary,
+      tags: tags || "",
+      folder: folder || null,
       userId: user.id,
     },
   });

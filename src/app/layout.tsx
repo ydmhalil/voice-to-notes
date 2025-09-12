@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import UserMenu from "@/components/UserMenu";
-import { SessionProvider } from "next-auth/react";
+import SessionWrapper from "@/components/SessionWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,12 +28,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <SessionProvider>
+        <SessionWrapper>
           <header className="w-full flex justify-end px-4 py-3 border-b bg-white/80 sticky top-0 z-20">
             <UserMenu />
           </header>
           {children}
-        </SessionProvider>
+        </SessionWrapper>
       </body>
     </html>
   );

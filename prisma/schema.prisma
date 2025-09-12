@@ -22,6 +22,9 @@ model Note {
   id         String   @id @default(cuid())
   transcript String
   summary    String
+  tags       String   // Virgülle ayrılmış etiketler
+  folder     String?  // Not klasörü (opsiyonel)
+  starred    Boolean  @default(false) // Yıldızlı/önemli not
   createdAt  DateTime @default(now())
   userId     String
   user       User     @relation(fields: [userId], references: [id])

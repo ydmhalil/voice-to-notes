@@ -3,8 +3,10 @@
 
 
 import { useState, useRef } from 'react';
+import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 
 function Spinner() {
 	return (
@@ -20,6 +22,7 @@ import ResultsDisplay from './ResultsDisplay';
 import ExportButtons from './ExportButtons';
 
 export default function AudioUpload() {
+	const { data: session } = useSession();
 	const [isRecording, setIsRecording] = useState(false);
 	const [audioFile, setAudioFile] = useState<File | null>(null);
 	const [transcript, setTranscript] = useState<string | null>(null);
@@ -27,6 +30,8 @@ export default function AudioUpload() {
 	const [error, setError] = useState<string | null>(null);
 	const [result, setResult] = useState<any>(null);
 	const [contentType, setContentType] = useState<'ders' | 'toplanti' | 'genel'>('genel');
+	const [tags, setTags] = useState("");
+	const [folder, setFolder] = useState("");
 	const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 	const audioChunksRef = useRef<Blob[]>([]);
 
@@ -112,35 +117,33 @@ export default function AudioUpload() {
 		}
 	};
 
-	const handleProcess = async (text: string) => {
-		setProcessing(true);
-		setError(null);
-		try {
-			const res = await fetch('/api/process', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ transcript: text, contentType }),
-			});
-			const data = await res.json();
-			if (!res.ok) throw new Error(data.error || 'İşleme hatası');
-			setResult(data);
-
-			// Kullanıcı giriş yaptıysa notu kaydet
-			const sessionRes = await fetch('/api/auth/session');
-			const session = await sessionRes.json();
-			if (session?.user?.email) {
-				await fetch('/api/notes', {
+		const handleProcess = async (text: string) => {
+			setProcessing(true);
+			setError(null);
+			try {
+				const res = await fetch('/api/process', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ transcript: text, summary: data.summary }),
+					body: JSON.stringify({ transcript: text, contentType }),
 				});
+				const data = await res.json();
+				if (!res.ok) throw new Error(data.error || 'İşleme hatası');
+				setResult(data);
+
+				// Kullanıcı giriş yaptıysa notu kaydet
+				if (session?.user?.email) {
+					await fetch('/api/notes', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({ transcript: text, summary: data.summary, tags, folder }),
+					});
+				}
+			} catch (err: any) {
+				setError(err.message || 'Bir hata oluştu');
+			} finally {
+				setProcessing(false);
 			}
-		} catch (err: any) {
-			setError(err.message || 'Bir hata oluştu');
-		} finally {
-			setProcessing(false);
-		}
-	};
+		};
 
 	return (
 		<Card className="p-4 sm:p-6 max-w-full sm:max-w-xl mx-auto shadow-lg border border-gray-200">
@@ -178,25 +181,37 @@ export default function AudioUpload() {
 					/>
 				</div>
 
-				{/* Selected File Info */}
-				{audioFile && (
-					<div className="bg-gray-100 p-3 rounded flex flex-col gap-2">
-						<p>Seçilen dosya: {audioFile.name}</p>
-						<p>Boyut: {(audioFile.size / 1024 / 1024).toFixed(2)} MB</p>
-						{/* Audio player */}
-						<audio
-							controls
-							src={URL.createObjectURL(audioFile)}
-							className="w-full mt-2"
-						>
-							Tarayıcınız audio etiketini desteklemiyor.
-						</audio>
-						<Button onClick={handleTranscribe} disabled={processing} className="w-full mt-2">
-							{processing ? 'İşleniyor...' : 'Transkribe & Özetle'}
-						</Button>
-						{processing && <Spinner />}
-					</div>
-				)}
+										{/* Selected File Info */}
+										{audioFile && (
+											<div className="bg-gray-100 p-3 rounded flex flex-col gap-2">
+												<p>Seçilen dosya: {audioFile.name}</p>
+												<p>Boyut: {(audioFile.size / 1024 / 1024).toFixed(2)} MB</p>
+												{/* Audio player */}
+												<audio
+													controls
+													src={URL.createObjectURL(audioFile)}
+													className="w-full mt-2"
+												>
+													Tarayıcınız audio etiketini desteklemiyor.
+												</audio>
+												<Input
+													placeholder="Etiketler (virgülle ayır) - ör: toplantı, önemli, ders"
+													value={tags}
+													onChange={e => setTags(e.target.value)}
+													disabled={processing}
+												/>
+												<Input
+													placeholder="Klasör (ör: Projeler, Toplantılar, Kişisel)"
+													value={folder}
+													onChange={e => setFolder(e.target.value)}
+													disabled={processing}
+												/>
+												<Button onClick={handleTranscribe} disabled={processing} className="w-full mt-2">
+													{processing ? 'İşleniyor...' : 'Transkribe & Özetle'}
+												</Button>
+												{processing && <Spinner />}
+											</div>
+										)}
 
 				{/* Progress indicator (global, eğer dosya seçili değilse de göster) */}
 				{processing && !audioFile && <Spinner />}
