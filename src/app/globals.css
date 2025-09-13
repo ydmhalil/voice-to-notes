@@ -1,3 +1,67 @@
+/* Header avatar (profile image or initial) daima beyaz arka plan ve koyu border */
+.header img,
+.header .user-avatar,
+header img,
+header .user-avatar,
+.app-header img,
+.app-header .user-avatar,
+.topbar img,
+.topbar .user-avatar,
+.navbar img,
+.navbar .user-avatar {
+  background: #fff !important;
+  border: 2px solid #444 !important;
+  color: #222 !important;
+}
+.dark .header img,
+.dark .header .user-avatar,
+.dark header img,
+.dark header .user-avatar,
+.dark .app-header img,
+.dark .app-header .user-avatar,
+.dark .topbar img,
+.dark .topbar .user-avatar,
+.dark .navbar img,
+.dark .navbar .user-avatar {
+  background: #fff !important;
+  border: 2px solid #444 !important;
+  color: #222 !important;
+}
+/* Koyu modda header içindeki kullanıcı adı kesinlikle siyah */
+.dark .header .user-name,
+.dark header .user-name,
+.dark .app-header .user-name,
+.dark .topbar .user-name,
+.dark .navbar .user-name {
+  color: #111 !important;
+  opacity: 1 !important;
+}
+/* Diğer tüm koyu tema metin override'larını geçersiz kılmak için daha spesifik selector */
+.dark .header .user-name,
+.dark header .user-name {
+  color: #111 !important;
+  opacity: 1 !important;
+}
+/* Koyu modda header'da .user-name için inline style veya başka bir override varsa daima siyah */
+.dark .user-name[style] {
+  color: #111 !important;
+  opacity: 1 !important;
+}
+/* Header her zaman beyaz arka plan ve koyu metin */
+.header, header, .app-header, .topbar, .navbar {
+  background: #fff !important;
+  color: #222 !important;
+  border-bottom: 1.5px solid #ccc !important;
+  box-shadow: 0 2px 8px 0 #0001;
+  z-index: 100;
+}
+/* Koyu modda da header aynı şekilde beyaz kalsın */
+.dark .header, .dark header, .dark .app-header, .dark .topbar, .dark .navbar {
+  background: #fff !important;
+  color: #222 !important;
+  border-bottom: 1.5px solid #ccc !important;
+  box-shadow: 0 2px 8px 0 #0001;
+}
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -79,37 +143,37 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --background: oklch(0.16 0 0); /* koyu gri/siyah, saf siyah değil */
+  --foreground: oklch(0.98 0 0); /* beyaz */
+  --card: oklch(0.19 0 0); /* kartlar için koyu gri */
+  --card-foreground: oklch(0.98 0 0);
+  --popover: oklch(0.19 0 0);
+  --popover-foreground: oklch(0.98 0 0);
+  --primary: oklch(0.85 0 0); /* açık gri butonlar için */
+  --primary-foreground: oklch(0.16 0 0); /* koyu metin */
+  --secondary: oklch(0.25 0 0); /* daha açık koyu gri */
+  --secondary-foreground: oklch(0.98 0 0);
+  --muted: oklch(0.22 0 0);
+  --muted-foreground: oklch(0.7 0 0);
+  --accent: oklch(0.3 0 0); /* vurgulu koyu gri */
+  --accent-foreground: oklch(0.98 0 0);
+  --destructive: oklch(0.7 0.19 22.216);
+  --border: oklch(0.3 0 0 / 60%); /* daha belirgin koyu kenarlık */
+  --input: oklch(0.22 0 0 / 80%); /* inputlar için koyu arka plan */
+  --ring: oklch(0.7 0 0);
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar: oklch(0.19 0 0);
+  --sidebar-foreground: oklch(0.98 0 0);
+  --sidebar-primary: oklch(0.35 0 0);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.3 0 0);
+  --sidebar-accent-foreground: oklch(0.98 0 0);
+  --sidebar-border: oklch(0.3 0 0 / 60%);
+  --sidebar-ring: oklch(0.7 0 0);
 }
 
 @layer base {
@@ -118,5 +182,139 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  /* Koyu tema: tüm sayfa ve ana layout için zorunlu arka plan ve metin rengi */
+  .dark body,
+  .dark main,
+  .dark #__next,
+  .dark .min-h-screen,
+  .dark .h-screen {
+    background: #111 !important;
+    color: #fff !important;
+  }
+  /* Koyu tema: başlıklar, label, legend, strong, b, h1-h6, açıklama, small, p */
+  .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6,
+  .dark label, .dark legend, .dark strong, .dark b,
+  .dark .font-bold, .dark .font-semibold, .dark .font-medium,
+  .dark p, .dark small, .dark .text-muted-foreground, .dark .text-gray-900, .dark .text-gray-700 {
+    color: #fff !important;
+    opacity: 1 !important;
+  }
+  /* Koyu tema: input, select, textarea, butonlar */
+  .dark input,
+  .dark select,
+  .dark textarea {
+    background-color: #222 !important;
+    color: #fff !important;
+    border-color: #444 !important;
+    opacity: 1 !important;
+  }
+  .dark button,
+  .dark .bg-primary,
+  .dark .bg-secondary,
+  .dark .bg-accent,
+  .dark .bg-destructive,
+  .dark .bg-background,
+  .dark .bg-input,
+  .dark .bg-muted {
+    background: #fff !important;
+    color: #222 !important;
+    border-color: #fff !important;
+    opacity: 1 !important;
+    box-shadow: 0 1px 4px 0 #0002;
+    transition: background 0.2s, color 0.2s;
+  }
+  .dark button:hover, .dark .bg-primary:hover, .dark .bg-secondary:hover, .dark .bg-accent:hover, .dark .bg-destructive:hover, .dark .bg-background:hover, .dark .bg-input:hover, .dark .bg-muted:hover,
+  .dark button:focus, .dark .bg-primary:focus, .dark .bg-secondary:focus, .dark .bg-accent:focus, .dark .bg-destructive:focus, .dark .bg-background:focus, .dark .bg-input:focus, .dark .bg-muted:focus {
+    background: #f3f3f3 !important;
+    color: #111 !important;
+  }
+  .dark button:active, .dark .bg-primary:active, .dark .bg-secondary:active, .dark .bg-accent:active, .dark .bg-destructive:active, .dark .bg-background:active, .dark .bg-input:active, .dark .bg-muted:active {
+    background: #e0e0e0 !important;
+    color: #111 !important;
+  }
+  .dark input:disabled,
+  .dark select:disabled,
+  .dark textarea:disabled,
+  .dark button:disabled {
+    background-color: #333 !important;
+    color: #aaa !important;
+    border-color: #444 !important;
+    opacity: 1 !important;
+  }
+  /* Koyu tema: placeholder metinler */
+  .dark ::placeholder {
+    color: #aaa !important;
+    opacity: 1 !important;
+  }
+  /* Koyu tema: kart dışı kutular ve borderlar */
+  .dark .border,
+  .dark .rounded,
+  .dark .rounded-md,
+  .dark .rounded-xl,
+  .dark button,
+  .dark input,
+  .dark select,
+  .dark textarea,
+  .dark .card,
+  .dark [data-slot="card"],
+  .dark [data-slot="card-content"],
+  .dark [data-slot="card-header"],
+  .dark [data-slot="card-footer"] {
+    border-color: #fff !important;
+    border-width: 2px !important;
+    background-clip: padding-box;
+  }
+  /* Koyu tema: kart dışı kutular için gölge */
+  .dark .shadow-lg, .dark .shadow-sm, .dark .shadow-xs {
+    box-shadow: 0 2px 8px 0 #0008 !important;
+  }
+  /* Koyu tema: ikonlar ve svg'ler */
+  .dark svg {
+    color: #fff !important;
+    fill: #fff !important;
+  }
+  /* Koyu tema için ek iyileştirmeler */
+  .dark .bg-white {
+    background-color: oklch(0.19 0 0) !important;
+    color: oklch(0.98 0 0) !important;
+  }
+  .dark .text-gray-900 {
+    color: oklch(0.98 0 0) !important;
+  }
+  .dark .border {
+    border-color: oklch(0.3 0 0 / 60%) !important;
+  }
+  .dark input,
+  .dark textarea,
+  .dark select {
+    background-color: oklch(0.22 0 0 / 80%) !important;
+    color: oklch(0.98 0 0) !important;
+    border-color: oklch(0.3 0 0 / 60%) !important;
+  }
+  .dark ::placeholder {
+    color: oklch(0.7 0 0) !important;
+    opacity: 1;
+  }
+  .dark .shadow-lg, .dark .shadow-sm, .dark .shadow-xs {
+    box-shadow: 0 2px 8px 0 oklch(0.1 0 0 / 40%) !important;
+  }
+  .dark .bg-gray-900 {
+    background-color: oklch(0.16 0 0) !important;
+    color: oklch(0.98 0 0) !important;
+  }
+  .dark .text-gray-500 {
+    color: oklch(0.7 0 0) !important;
+  }
+  .dark .text-black {
+    color: oklch(0.98 0 0) !important;
+  }
+  .dark .text-white {
+    color: oklch(0.98 0 0) !important;
+  }
+  .dark .rounded,
+  .dark .rounded-md,
+  .dark .rounded-xl {
+    background-clip: padding-box;
   }
 }

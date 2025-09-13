@@ -1,0 +1,6 @@
+This is a placeholder. Please add the DejaVuSans.ttf font file here for Turkish character support in PDF exports.
+
+You can download DejaVuSans.ttf from:
+https://dejavu-fonts.github.io/Download.html
+
+After adding the font, update the PDF export logic to embed and use it with jsPDF.

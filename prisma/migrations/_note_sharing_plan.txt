@@ -1,0 +1,11 @@
+// Migration: Add sharing fields to Note model
+// - publicShareId: unique string for public sharing
+// - sharedWith: comma-separated user emails for private sharing
+// Run: npx prisma migrate dev --name note-sharing
+
+// Add to schema.prisma:
+// model Note {
+//   ...
+//   publicShareId String? @unique
+//   sharedWith    String? // comma-separated emails
+// }

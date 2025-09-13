@@ -2,7 +2,18 @@
 'use client';
 
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+// Klasör ve etiketleri API'den çekmek için yardımcı fonksiyonlar
+async function fetchFolders(): Promise<string[]> {
+	const res = await fetch('/api/folders');
+	if (!res.ok) return [];
+	return await res.json();
+}
+async function fetchTags(): Promise<string[]> {
+	const res = await fetch('/api/tags');
+	if (!res.ok) return [];
+	return await res.json();
+}
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -29,9 +40,17 @@ export default function AudioUpload() {
 	const [processing, setProcessing] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [result, setResult] = useState<any>(null);
+	const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
 	const [contentType, setContentType] = useState<'ders' | 'toplanti' | 'genel'>('genel');
-	const [tags, setTags] = useState("");
-	const [folder, setFolder] = useState("");
+		const [tags, setTags] = useState("");
+		const [folder, setFolder] = useState("");
+		const [allFolders, setAllFolders] = useState<string[]>([]);
+		const [allTags, setAllTags] = useState<string[]>([]);
+	// Klasör ve etiketleri yükle
+	useEffect(() => {
+		fetchFolders().then(setAllFolders);
+		fetchTags().then(setAllTags);
+	}, []);
 	const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 	const audioChunksRef = useRef<Blob[]>([]);
 
@@ -130,12 +149,31 @@ export default function AudioUpload() {
 				if (!res.ok) throw new Error(data.error || 'İşleme hatası');
 				setResult(data);
 
+				// Parse and set suggested tags from Gemini
+				if (data.suggestedTags) {
+					const tagList = data.suggestedTags
+						.split(',')
+						.map((t: string) => t.trim())
+						.filter(Boolean);
+					setSuggestedTags(tagList);
+				} else {
+					setSuggestedTags([]);
+				}
+
 				// Kullanıcı giriş yaptıysa notu kaydet
 				if (session?.user?.email) {
 					await fetch('/api/notes', {
 						method: 'POST',
 						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify({ transcript: text, summary: data.summary, tags, folder }),
+						body: JSON.stringify({
+							transcript: text,
+							summary: data.summary,
+							keyPoints: data.keyPoints || '',
+							questions: data.questions || '',
+							actionItems: data.actionItems || '',
+							tags,
+							folder
+						}),
 					});
 				}
 			} catch (err: any) {
@@ -145,11 +183,11 @@ export default function AudioUpload() {
 			}
 		};
 
-	return (
-		<Card className="p-4 sm:p-6 max-w-full sm:max-w-xl mx-auto shadow-lg border border-gray-200">
-			<div className="space-y-4 text-base sm:text-[1rem]">
+		return (
+			<Card className="p-3 sm:p-5 w-full max-w-full sm:max-w-xl mx-auto shadow-lg border border-gray-200">
+				<div className="space-y-3 sm:space-y-4 text-base sm:text-[1rem]">
 				{/* Content Type Selector */}
-				<div className="flex gap-2 justify-center mb-2">
+				<div className="flex gap-1 sm:gap-2 justify-center mb-2 flex-wrap">
 					<Button variant={contentType === 'ders' ? 'default' : 'outline'} onClick={() => setContentType('ders')}>Ders</Button>
 					<Button variant={contentType === 'toplanti' ? 'default' : 'outline'} onClick={() => setContentType('toplanti')}>Toplantı</Button>
 					<Button variant={contentType === 'genel' ? 'default' : 'outline'} onClick={() => setContentType('genel')}>Genel</Button>
@@ -168,7 +206,7 @@ export default function AudioUpload() {
 				</div>
 
 				{/* Divider */}
-				<div className="text-center text-gray-500">veya</div>
+				<div className="text-center text-gray-500 text-sm">veya</div>
 
 				{/* File Upload */}
 				<div>
@@ -183,7 +221,7 @@ export default function AudioUpload() {
 
 										{/* Selected File Info */}
 										{audioFile && (
-											<div className="bg-gray-100 p-3 rounded flex flex-col gap-2">
+											<div className="bg-gray-100 p-2 sm:p-3 rounded flex flex-col gap-2">
 												<p>Seçilen dosya: {audioFile.name}</p>
 												<p>Boyut: {(audioFile.size / 1024 / 1024).toFixed(2)} MB</p>
 												{/* Audio player */}
@@ -194,19 +232,57 @@ export default function AudioUpload() {
 												>
 													Tarayıcınız audio etiketini desteklemiyor.
 												</audio>
-												<Input
-													placeholder="Etiketler (virgülle ayır) - ör: toplantı, önemli, ders"
-													value={tags}
-													onChange={e => setTags(e.target.value)}
-													disabled={processing}
-												/>
-												<Input
-													placeholder="Klasör (ör: Projeler, Toplantılar, Kişisel)"
-													value={folder}
-													onChange={e => setFolder(e.target.value)}
-													disabled={processing}
-												/>
-												<Button onClick={handleTranscribe} disabled={processing} className="w-full mt-2">
+																		<div className="flex flex-col gap-2">
+																			<div>
+																				<label className="block text-xs mb-1">Klasör:</label>
+																				<select
+																					value={folder}
+																					onChange={e => setFolder(e.target.value)}
+																					className="border rounded px-2 py-1 w-full"
+																					disabled={processing}
+																				>
+																					<option value="">Klasör seçin veya yazın</option>
+																					{allFolders.map(f => (
+																						<option key={f} value={f}>{f}</option>
+																					))}
+																				</select>
+																				<Input
+																					placeholder="Yeni klasör ekle (yazıp Enter'a bas)"
+																					value={folder}
+																					onChange={e => setFolder(e.target.value)}
+																					onKeyDown={e => {
+																						if (e.key === 'Enter') e.preventDefault();
+																					}}
+																					disabled={processing}
+																					className="mt-1"
+																				/>
+																			</div>
+																			<div>
+																				<label className="block text-xs mb-1">Etiketler:</label>
+																				<select
+																					multiple
+																					value={tags.split(",").map(t => t.trim()).filter(Boolean)}
+																					onChange={e => {
+																						const selected = Array.from(e.target.selectedOptions).map(opt => opt.value);
+																						setTags(selected.join(", "));
+																					}}
+																					className="border rounded px-2 py-1 w-full"
+																					disabled={processing}
+																				>
+																					{allTags.map(tag => (
+																						<option key={tag} value={tag}>{tag}</option>
+																					))}
+																				</select>
+																				<Input
+																					placeholder="Yeni etiket ekle (virgülle ayır)"
+																					value={tags}
+																					onChange={e => setTags(e.target.value)}
+																					disabled={processing}
+																					className="mt-1"
+																				/>
+																			</div>
+																		</div>
+												<Button onClick={handleTranscribe} disabled={processing} className="w-full mt-2 text-base py-2">
 													{processing ? 'İşleniyor...' : 'Transkribe & Özetle'}
 												</Button>
 												{processing && <Spinner />}
@@ -222,8 +298,40 @@ export default function AudioUpload() {
 				{/* Sonuç */}
 				{result && (
 					<div className="mt-6">
+						{/* Gemini önerilen etiketler */}
+						{suggestedTags.length > 0 && (
+							<div className="mb-4">
+								<div className="font-semibold mb-1">🤖 Önerilen Etiketler:</div>
+								<div className="flex flex-wrap gap-2">
+									{suggestedTags.map((tag) => (
+										<button
+											key={tag}
+											type="button"
+											className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs hover:bg-blue-200"
+											onClick={() => {
+												// Add tag to tags field if not already present
+												const current = tags.split(',').map(t => t.trim()).filter(Boolean);
+												if (!current.includes(tag)) {
+													setTags(current.concat(tag).join(', '));
+												}
+											}}
+										>
+											#{tag}
+										</button>
+									))}
+								</div>
+								<div className="text-xs text-gray-500 mt-1">Bir etikete tıklayarak ekleyebilirsiniz.</div>
+							</div>
+						)}
 						<ResultsDisplay content={{ ...result, text: transcript }} />
-						<ExportButtons content={result} title={audioFile?.name.replace(/\.[^/.]+$/, '') || 'notlar'} />
+						<ExportButtons content={{
+							...result,
+							summary: result.summary || '',
+							keyPoints: result.keyPoints || '',
+							questions: result.questions || '',
+							actionItems: result.actionItems || '',
+							text: transcript || ''
+						}} title={audioFile?.name.replace(/\.[^/.]+$/, '') || 'notlar'} />
 					</div>
 				)}
 			</div>

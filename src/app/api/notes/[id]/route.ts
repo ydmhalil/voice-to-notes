@@ -33,7 +33,7 @@ export async function PUT(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const body = await req.json();
-  const { summary, transcript } = body;
+  const { summary, transcript, keyPoints, questions, actionItems, tags, folder } = body;
   if (!summary || !transcript) {
     return NextResponse.json({ error: "Eksik veri" }, { status: 400 });
   }
@@ -43,9 +43,29 @@ export async function PUT(
   if (!note || !user || note.userId !== user.id) {
     return NextResponse.json({ error: "Yetkisiz işlem" }, { status: 403 });
   }
+  // Eski sürümü NoteVersion tablosuna kaydet
+  await prisma.noteVersion.create({
+    data: {
+      noteId: note.id,
+      transcript: note.transcript,
+      summary: note.summary,
+      tags: note.tags,
+      folder: note.folder,
+      starred: note.starred,
+    },
+  });
+  // Notu güncelle
   const updated = await prisma.note.update({
     where: { id: params.id },
-    data: { summary, transcript },
+    data: {
+      summary,
+      transcript,
+      keyPoints: keyPoints ?? note.keyPoints,
+      questions: questions ?? note.questions,
+      actionItems: actionItems ?? note.actionItems,
+      tags: tags ?? note.tags,
+      folder: folder ?? note.folder,
+    },
   });
   return NextResponse.json(updated);
 }

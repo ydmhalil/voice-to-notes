@@ -19,13 +19,31 @@ model User {
 }
 
 model Note {
+  id            String   @id @default(cuid())
+  transcript    String
+  summary       String
+  keyPoints     String   @default("") // Önemli noktalar
+  questions     String   @default("") // Soru-cevaplar
+  actionItems   String?  // Eylem maddeleri (opsiyonel)
+  tags          String   // Virgülle ayrılmış etiketler
+  folder        String?  // Not klasörü (opsiyonel)
+  starred       Boolean  @default(false) // Yıldızlı/önemli not
+  createdAt     DateTime @default(now())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  versions      NoteVersion[]
+  publicShareId String?  @unique // Her not için opsiyonel paylaşım linki
+  sharedWith    String?         // Virgülle ayrılmış e-posta listesi (özel paylaşım)
+}
+
+model NoteVersion {
   id         String   @id @default(cuid())
+  noteId     String
+  note       Note     @relation(fields: [noteId], references: [id])
   transcript String
   summary    String
-  tags       String   // Virgülle ayrılmış etiketler
-  folder     String?  // Not klasörü (opsiyonel)
-  starred    Boolean  @default(false) // Yıldızlı/önemli not
+  tags       String
+  folder     String?
+  starred    Boolean
   createdAt  DateTime @default(now())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id])
 }
