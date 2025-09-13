@@ -3,14 +3,14 @@
 import { signIn, signOut, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 
-import { useTheme } from "@/lib/useTheme";
+// Koyu tema kaldırıldı
 import { useState, useEffect } from "react";
 
 
 export default function UserMenu() {
   // HOOKS: Always at the top, before any return/condition
   const { data: session, status } = useSession();
-  const { theme, setTheme } = useTheme();
+  // Tema yönetimi kaldırıldı
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [language, setLanguage] = useState("tr");
   const [notifications, setNotifications] = useState(true);
@@ -55,13 +55,7 @@ export default function UserMenu() {
     // eslint-disable-next-line react/no-danger
     dangerouslySetInnerHTML={{ __html: `<span style='color:#111 !important;'>${session.user?.name ?? ''}</span>` }}
   />
-      <Button
-        variant="outline"
-        onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-        title={theme === "dark" ? "Açık Mod" : "Koyu Mod"}
-      >
-        {theme === "dark" ? "🌙" : "🌞"}
-      </Button>
+      {/* Tema butonu kaldırıldı */}
       <Button
         variant="outline"
         onClick={() => setSettingsOpen(true)}
@@ -79,14 +73,9 @@ export default function UserMenu() {
             <h3 className="font-bold mb-4 text-lg">Kullanıcı Ayarları</h3>
             <div className="mb-3">
               <label className="block text-xs mb-1">Tema:</label>
-              <select
-                value={theme}
-                onChange={e => setTheme(e.target.value as "light" | "dark")}
-                className="border rounded px-2 py-1 w-full"
-              >
-                <option value="light">Açık</option>
-                <option value="dark">Koyu</option>
-              </select>
+              <div className="border rounded px-2 py-1 w-full">
+                <span>Açık</span>
+              </div>
             </div>
             <div className="mb-3">
               <label className="block text-xs mb-1">Dil:</label>

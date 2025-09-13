@@ -187,11 +187,29 @@ export default function AudioUpload() {
 			<Card className="p-3 sm:p-5 w-full max-w-full sm:max-w-xl mx-auto shadow-lg border border-gray-200">
 				<div className="space-y-3 sm:space-y-4 text-base sm:text-[1rem]">
 				{/* Content Type Selector */}
-				<div className="flex gap-1 sm:gap-2 justify-center mb-2 flex-wrap">
-					<Button variant={contentType === 'ders' ? 'default' : 'outline'} onClick={() => setContentType('ders')}>Ders</Button>
-					<Button variant={contentType === 'toplanti' ? 'default' : 'outline'} onClick={() => setContentType('toplanti')}>Toplantı</Button>
-					<Button variant={contentType === 'genel' ? 'default' : 'outline'} onClick={() => setContentType('genel')}>Genel</Button>
-				</div>
+				   <div className="flex gap-1 sm:gap-2 justify-center mb-2 flex-wrap">
+					   <Button
+						   variant="default"
+						   onClick={() => setContentType('ders')}
+						   className={contentType === 'ders'
+							   ? 'bg-black text-white border-black hover:bg-black hover:text-white'
+							   : 'bg-white text-black border-black hover:bg-gray-100'}
+					   >Ders</Button>
+					   <Button
+						   variant="default"
+						   onClick={() => setContentType('toplanti')}
+						   className={contentType === 'toplanti'
+							   ? 'bg-black text-white border-black hover:bg-black hover:text-white'
+							   : 'bg-white text-black border-black hover:bg-gray-100'}
+					   >Toplantı</Button>
+					   <Button
+						   variant="default"
+						   onClick={() => setContentType('genel')}
+						   className={contentType === 'genel'
+							   ? 'bg-black text-white border-black hover:bg-black hover:text-white'
+							   : 'bg-white text-black border-black hover:bg-gray-100'}
+					   >Genel</Button>
+				   </div>
 
 				{/* Recording Section */}
 				<div className="text-center">
@@ -208,16 +226,44 @@ export default function AudioUpload() {
 				{/* Divider */}
 				<div className="text-center text-gray-500 text-sm">veya</div>
 
-				{/* File Upload */}
-				<div>
-					<input
-						type="file"
-						accept="audio/*"
-						onChange={handleFileUpload}
-						className="w-full"
-						disabled={processing}
-					/>
-				</div>
+
+				   {/* File Upload - Buton Stili */}
+				   <div className="flex flex-col items-center gap-2">
+					   <label htmlFor="audio-upload" className="w-full flex justify-center">
+						   <Button
+							   asChild
+							   variant="default"
+							   className={
+								   'w-48 text-base py-2 cursor-pointer ' +
+								   (contentType === 'ders' || contentType === 'toplanti' || contentType === 'genel')
+									   ? (contentType === 'ders'
+										   ? (contentType === 'ders' ? 'bg-black text-white border-black hover:bg-black hover:text-white' : 'bg-white text-black border-black hover:bg-gray-100')
+										   : contentType === 'toplanti'
+										   ? (contentType === 'toplanti' ? 'bg-black text-white border-black hover:bg-black hover:text-white' : 'bg-white text-black border-black hover:bg-gray-100')
+										   : (contentType === 'genel' ? 'bg-black text-white border-black hover:bg-black hover:text-white' : 'bg-white text-black border-black hover:bg-gray-100'))
+									   : 'bg-white text-black border-black hover:bg-gray-100'
+							   }
+							   disabled={processing}
+						   >
+							   <span>
+								   {contentType === 'ders' && 'Ders Dosyası Seç'}
+								   {contentType === 'toplanti' && 'Toplantı Dosyası Seç'}
+								   {contentType === 'genel' && 'Genel Dosya Seç'}
+							   </span>
+						   </Button>
+						   <input
+							   id="audio-upload"
+							   type="file"
+							   accept="audio/*"
+							   onChange={handleFileUpload}
+							   className="hidden"
+							   disabled={processing}
+						   />
+					   </label>
+					   <div className="text-gray-700 text-base min-h-[1.5rem]">
+						   {audioFile ? `Seçilen dosya: ${audioFile.name}` : 'Dosya seçilmedi.'}
+					   </div>
+				   </div>
 
 										{/* Selected File Info */}
 										{audioFile && (
