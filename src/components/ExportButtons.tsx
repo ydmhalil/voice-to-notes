@@ -44,15 +44,15 @@ export default function ExportButtons({ content, title }: ExportButtonsProps) {
 
 	return (
 		<div className="flex flex-wrap gap-4 mt-4 items-center">
-			<Button onClick={() => exportToPDF(content, title)} variant="default">
-				PDF Olarak İndir
-			</Button>
-			<Button onClick={() => exportToText(content, title)} variant="outline">
-				TXT Olarak İndir
-			</Button>
-			<Button onClick={handleShareEmail} variant="secondary">
-				E-posta ile Paylaş
-			</Button>
+					<Button onClick={() => exportToPDF(content, title)} variant="outline" className="text-black border-black hover:bg-gray-100">
+						PDF Olarak İndir
+					</Button>
+					<Button onClick={() => exportToText(content, title)} variant="outline" className="text-black border-black hover:bg-gray-100">
+						TXT Olarak İndir
+					</Button>
+					<Button onClick={handleShareEmail} variant="outline" className="text-black border-black hover:bg-gray-100">
+						E-posta ile Paylaş
+					</Button>
 			<Button onClick={handleCopy} variant="outline">
 				{copied ? 'Kopyalandı!' : 'Kopyala'}
 			</Button>

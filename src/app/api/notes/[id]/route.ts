@@ -33,7 +33,7 @@ export async function PUT(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const body = await req.json();
-  const { summary, transcript, keyPoints, questions, actionItems, tags, folder } = body;
+  const { title, summary, transcript, keyPoints, questions, actionItems, tags, folder } = body;
   if (!summary || !transcript) {
     return NextResponse.json({ error: "Eksik veri" }, { status: 400 });
   }
@@ -54,10 +54,31 @@ export async function PUT(
       starred: note.starred,
     },
   });
+  // Klasör(ler) yeni ise Folder tablosuna ekle (virgülle ayrılmışsa hepsini ekle)
+  if (folder && folder.trim()) {
+    const folderArr = folder.split(",").map((f: string) => f.trim()).filter(Boolean);
+    for (const f of folderArr) {
+      const existingFolder = await prisma.folder.findFirst({ where: { name: f, userId: user.id } });
+      if (!existingFolder) {
+        await prisma.folder.create({ data: { name: f, userId: user.id } });
+      }
+    }
+  }
+  // Etiket(ler) yeni ise Tag tablosuna ekle
+  if (tags && typeof tags === "string") {
+    const tagArr = tags.split(",").map((t: string) => t.trim()).filter(Boolean);
+    for (const tag of tagArr) {
+      const existingTag = await prisma.tag.findFirst({ where: { name: tag, userId: user.id } });
+      if (!existingTag) {
+        await prisma.tag.create({ data: { name: tag, userId: user.id } });
+      }
+    }
+  }
   // Notu güncelle
   const updated = await prisma.note.update({
     where: { id: params.id },
     data: {
+      title: title ?? note.title,
       summary,
       transcript,
       keyPoints: keyPoints ?? note.keyPoints,

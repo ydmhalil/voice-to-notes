@@ -97,6 +97,7 @@ export default function NotesHistory() {
   const [notes, setNotes] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
   const [editSummary, setEditSummary] = useState("");
   const [editTranscript, setEditTranscript] = useState("");
   const [editTags, setEditTags] = useState("");
@@ -156,6 +157,7 @@ export default function NotesHistory() {
 
   const handleEdit = (note: any) => {
     setEditId(note.id);
+    setEditTitle(note.title || "");
     setEditSummary(note.summary);
     setEditTranscript(note.transcript);
     setEditTags(note.tags || "");
@@ -167,7 +169,7 @@ export default function NotesHistory() {
     await fetch(`/api/notes/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ summary: editSummary, transcript: editTranscript, tags: editTags, folder: editFolder }),
+      body: JSON.stringify({ title: editTitle, summary: editSummary, transcript: editTranscript, tags: editTags, folder: editFolder }),
     });
     setEditId(null);
     fetchNotes();
@@ -258,8 +260,8 @@ export default function NotesHistory() {
             <div className="space-y-4">
               {notes.map((note: any) => (
                 <Card key={note.id}>
-                  <CardHeader className="flex flex-row items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
+                  <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-2 min-w-0 flex-shrink">
                       <button
                         aria-label={note.starred ? "Yıldızı kaldır" : "Yıldızla"}
                         className={"text-yellow-500 text-xl focus:outline-none" + (note.starred ? "" : " opacity-40 hover:opacity-80")}
@@ -269,82 +271,22 @@ export default function NotesHistory() {
                       >
                         ★
                       </button>
-                      <CardTitle className="text-base">{new Date(note.createdAt).toLocaleString()}</CardTitle>
+                      <span className="font-bold text-base truncate max-w-[160px]">
+                        {note.title || "Başlıksız Not"}
+                      </span>
+                      <span className="text-gray-500 text-sm whitespace-nowrap">{new Date(note.createdAt).toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
                       <Button size="sm" variant="outline" onClick={() => handleEdit(note)} disabled={actionLoading || editId === note.id}>Düzenle</Button>
-                      <Button size="sm" variant="secondary" onClick={() => openShareModal(note)} disabled={actionLoading}>Paylaş</Button>
-        {/* Paylaşım Modalı */}
-        <Modal open={shareModalOpen} onClose={closeShareModal}>
-          <h4 className="font-bold mb-2">Notu Paylaş</h4>
-          {shareLoading ? (
-            <div>Oluşturuluyor...</div>
-          ) : (
-            <>
-              <div className="mb-2">Bu bağlantıyı paylaşarak notu herkesle görüntüleyebilirsin:</div>
-              <div className="flex items-center gap-2 mb-2">
-                <input type="text" value={shareLink} readOnly className="border rounded px-2 py-1 w-full text-xs" />
-                <Button size="sm" onClick={() => {navigator.clipboard.writeText(shareLink)}}>Kopyala</Button>
-              </div>
-              <div className="text-xs text-gray-500">Bağlantıya sahip olan herkes notu görüntüleyebilir.</div>
-            </>
-          )}
-              <div className="mt-4 border-t pt-3">
-                <div className="font-semibold mb-1">Belirli kullanıcılarla paylaş:</div>
-                <form
-                  onSubmit={async (e) => {
-                    e.preventDefault();
-                    setInviteStatus("");
-                    if (!inviteEmail.trim()) return;
-                    setShareLoading(true);
-                    // Mevcut sharedWith'a ekle
-                    const current = (shareNote?.sharedWith || "").split(",").map((t: string) => t.trim()).filter(Boolean);
-                    if (current.includes(inviteEmail.trim())) {
-                      setInviteStatus("Bu e-posta zaten ekli.");
-                      setShareLoading(false);
-                      return;
-                    }
-                    const updated = current.concat(inviteEmail.trim()).join(", ");
-                    const res = await fetch(`/api/notes/${shareNote.id}/share`, {
-                      method: 'PATCH',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ sharedWith: updated }),
-                    });
-                    if (res.ok) {
-                      setInviteStatus("Kullanıcı eklendi.");
-                      setInviteEmail("");
-                      fetchNotes();
-                    } else {
-                      setInviteStatus("Bir hata oluştu.");
-                    }
-                    setShareLoading(false);
-                  }}
-                  className="flex gap-2 items-center mb-2"
-                >
-                  <Input
-                    type="email"
-                    placeholder="E-posta adresi"
-                    value={inviteEmail}
-                    onChange={e => setInviteEmail(e.target.value)}
-                    className="w-48"
-                    disabled={shareLoading}
-                  />
-                  <Button size="sm" type="submit" disabled={shareLoading || !inviteEmail.trim()}>Ekle</Button>
-                </form>
-                {inviteStatus && <div className="text-xs text-gray-600 mb-2">{inviteStatus}</div>}
-                <div className="text-xs text-gray-500 mb-1">Ekli kullanıcılar:</div>
-                <div className="flex flex-wrap gap-1 mb-2">
-                  {(shareNote?.sharedWith || "").split(",").map((email: string) => email.trim()).filter(Boolean).map((email: string) => (
-                    <span key={email} className="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs">{email}</span>
-                  ))}
-                </div>
-                <div className="text-xs text-gray-400">Sadece eklenen e-posta adresleri bu notu görüntüleyebilir (geliştirilecek).</div>
-              </div>
-        </Modal>
-                      <Button size="sm" variant="destructive" onClick={() => handleDelete(note.id)} disabled={actionLoading}>Sil</Button>
+                      <Button size="sm" variant="outline" className="text-black border-black hover:bg-gray-100" onClick={() => openShareModal(note)} disabled={actionLoading}>Paylaş</Button>
+                        <Button size="sm" variant="outline" className="text-black border-black hover:bg-gray-100" onClick={() => handleDelete(note.id)} disabled={actionLoading} aria-label="Sil">Sil</Button>
                     </div>
                   </CardHeader>
                   <CardContent>
                     {editId === note.id ? (
                       <div className="space-y-2">
+                        <div className="font-semibold">Başlık:</div>
+                        <Input value={editTitle} onChange={e => setEditTitle(e.target.value)} placeholder="Not başlığı" />
                         <div className="font-semibold">Özet:</div>
                         <Textarea value={editSummary} onChange={e => setEditSummary(e.target.value)} rows={3} />
                         <div className="font-semibold">Transkript:</div>
@@ -354,52 +296,43 @@ export default function NotesHistory() {
                         <div className="font-semibold">Klasör:</div>
                         <Input value={editFolder} onChange={e => setEditFolder(e.target.value)} placeholder="ör: Projeler, Toplantılar, Kişisel" />
                         <div className="flex gap-2 mt-2">
-                          <Button size="sm" onClick={() => handleEditSave(note.id)} disabled={actionLoading}>Kaydet</Button>
+                          <Button size="sm" variant="outline" className="text-black border-black hover:bg-gray-100" onClick={() => handleEditSave(note.id)} disabled={actionLoading}>Kaydet</Button>
                           <Button size="sm" variant="outline" onClick={() => setEditId(null)} disabled={actionLoading}>Vazgeç</Button>
                         </div>
                       </div>
                     ) : (
                       <>
-                        <div className="flex gap-2 mt-2">
-                          <Button size="sm" variant="secondary" onClick={() => openVersionModal(note.id)}>
-                            Sürüm Geçmişi
-                          </Button>
-                        </div>
-                        {/* Sürüm geçmişi modalı */}
-                        <Modal open={versionModalOpen && versionNoteId === note.id} onClose={closeVersionModal}>
-                          <h4 className="font-bold mb-2">Sürüm Geçmişi</h4>
-                          {versionLoading ? (
-                            <div>Yükleniyor...</div>
-                          ) : versions.length === 0 ? (
-                            <div>Hiç eski sürüm yok.</div>
-                          ) : (
-                            <div className="space-y-4 max-h-96 overflow-y-auto">
-                              {versions.map((v, i) => (
-                                <div key={v.id} className="border-b pb-2 mb-2">
-                                  <div className="text-xs text-gray-500 mb-1">{new Date(v.createdAt).toLocaleString()}</div>
-                                  <div className="font-semibold">Özet:</div>
-                                  <div className="whitespace-pre-wrap text-gray-700 mb-1">{v.summary}</div>
-                                  <div className="font-semibold">Transkript:</div>
-                                  <div className="whitespace-pre-wrap text-gray-500 mb-1">{v.transcript}</div>
-                                  <div className="text-xs text-gray-400 mb-1">Etiketler: {v.tags} | Klasör: {v.folder || "-"}</div>
-                                  <Button size="sm" variant="outline" onClick={() => handleRollback(note.id, v)} disabled={rollbackLoading}>
-                                    Bu sürüme geri dön
-                                  </Button>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </Modal>
                         <div className="font-semibold mb-2">Özet:</div>
                         <div className="whitespace-pre-wrap text-gray-700 mb-2">{note.summary}</div>
+                        {note.keyPoints && (
+                          <>
+                            <div className="font-semibold mb-1">Önemli Noktalar:</div>
+                            <div className="whitespace-pre-wrap text-gray-800 mb-2">{note.keyPoints}</div>
+                          </>
+                        )}
+                        {note.questions && (
+                          <>
+                            <div className="font-semibold mb-1">Sorular:</div>
+                            <div className="whitespace-pre-wrap text-gray-800 mb-2">{note.questions}</div>
+                          </>
+                        )}
+                        {note.actionItems && (
+                          <>
+                            <div className="font-semibold mb-1">Aksiyon Maddeleri:</div>
+                            <div className="whitespace-pre-wrap text-gray-800 mb-2">{note.actionItems}</div>
+                          </>
+                        )}
                         <div className="flex flex-wrap gap-1 mb-2">
                           {(note.tags || "").split(",").map((tag: string) => tag.trim()).filter(Boolean).map((tag: string) => (
                             <span key={tag} className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs">#{tag}</span>
                           ))}
                         </div>
-                        <details>
-                          <summary className="cursor-pointer text-blue-600 underline">Transkript</summary>
-                          <div className="whitespace-pre-wrap text-gray-500 mt-2">{note.transcript}</div>
+                        <details className="mt-2 group">
+                          <summary className="cursor-pointer border border-black rounded px-3 py-1 text-black hover:bg-gray-100 transition flex items-center gap-2 select-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                            Transkript
+                          </summary>
+                          <div className="whitespace-pre-wrap text-gray-700 mt-2 p-2 bg-gray-50 rounded border border-gray-200">{note.transcript}</div>
                         </details>
                         <ExportButtons
                           content={{
@@ -412,7 +345,7 @@ export default function NotesHistory() {
                             folder: note.folder || '',
                             createdAt: note.createdAt
                           }}
-                          title={note.summary?.slice(0, 30) || "Not"}
+                          title={note.title || note.summary?.slice(0, 30) || "Not"}
                         />
                       </>
                     )}

@@ -1,3 +1,16 @@
+model Folder {
+  id     String  @id @default(cuid())
+  name   String
+  user   User    @relation(fields: [userId], references: [id])
+  userId String
+}
+
+model Tag {
+  id     String  @id @default(cuid())
+  name   String
+  user   User    @relation(fields: [userId], references: [id])
+  userId String
+}
 
 generator client {
   provider = "prisma-client-js"
@@ -16,10 +29,13 @@ model User {
   emailVerified DateTime?
   image         String?
   notes         Note[]
+  folders       Folder[]
+  tags          Tag[]
 }
 
 model Note {
   id            String   @id @default(cuid())
+  title         String   @default("") // Not başlığı
   transcript    String
   summary       String
   keyPoints     String   @default("") // Önemli noktalar

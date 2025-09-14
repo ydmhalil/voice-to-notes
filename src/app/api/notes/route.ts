@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const body = await req.json();
-  const { transcript, summary, keyPoints, questions, actionItems, tags, folder } = body;
+  const { title, transcript, summary, keyPoints, questions, actionItems, tags, folder } = body;
   if (!transcript || !summary) {
     return NextResponse.json({ error: "Eksik veri" }, { status: 400 });
   }
@@ -67,6 +67,7 @@ export async function POST(req: NextRequest) {
   });
   const note = await prisma.note.create({
     data: {
+      title: title || "",
       transcript,
       summary,
       keyPoints: keyPoints || "",
