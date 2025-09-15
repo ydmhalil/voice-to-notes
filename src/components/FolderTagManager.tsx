@@ -107,7 +107,7 @@ export default function FolderTagManager() {
     placeholder="Yeni klasör ismi"
     className="inline-block w-auto mr-2"
   />
-  <Button size="sm" onClick={handleAddFolder}>+ Ekle</Button>
+  <Button size="sm" className="border-2 border-black" onClick={handleAddFolder}>+ Ekle</Button>
       </div>
   <div className="mb-3">
         <div className="font-semibold mb-1">Etiketler:</div>
@@ -125,7 +125,7 @@ export default function FolderTagManager() {
     placeholder="Yeni etiket"
     className="inline-block w-auto mr-2"
   />
-  <Button size="sm" onClick={handleAddTag}>+ Ekle</Button>
+  <Button size="sm" className="border-2 border-black" onClick={handleAddTag}>+ Ekle</Button>
       </div>
   <div className="text-xs text-gray-500 mt-2">Klasör ve etiket ekleme/silme işlemlerini buradan yönetebilirsiniz.</div>
     </div>

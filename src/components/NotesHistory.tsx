@@ -22,20 +22,71 @@ function Modal({ open, onClose, children }: { open: boolean; onClose: () => void
 }
 
 export default function NotesHistory() {
+  // Daha fazla soru oluştur fonksiyonu
+  const handleGenerateMoreQuestions = async (note: any) => {
+    setActionLoading(true);
+    try {
+      const res = await fetch(`/api/notes/${note.id}/generate-questions`, { method: "POST" });
+      const data = await res.json();
+      // Notlar state'ini güncelle
+      setNotes(prevNotes => prevNotes.map(n => n.id === note.id ? { ...n, questions: data.questions } : n));
+    } catch (e) {
+      alert("Sorular oluşturulurken bir hata oluştu.");
+    }
+    setActionLoading(false);
+  };
+
+  const { data: session } = useSession();
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [shareNote, setShareNote] = useState<any>(null);
   const [shareLink, setShareLink] = useState<string>("");
   const [shareLoading, setShareLoading] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteStatus, setInviteStatus] = useState<string>("");
+  const [versionModalOpen, setVersionModalOpen] = useState(false);
+  const [versionNoteId, setVersionNoteId] = useState<string | null>(null);
+  const [versions, setVersions] = useState<any[]>([]);
+  const [versionLoading, setVersionLoading] = useState(false);
+  const [rollbackLoading, setRollbackLoading] = useState(false);
+  const [notes, setNotes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editSummary, setEditSummary] = useState("");
+  const [editTranscript, setEditTranscript] = useState("");
+  const [editTags, setEditTags] = useState("");
+  const [editFolder, setEditFolder] = useState("");
+  const [actionLoading, setActionLoading] = useState(false);
+  const [search, setSearch] = useState("");
+  const [tagFilter, setTagFilter] = useState("");
+  const [folderFilter, setFolderFilter] = useState("");
+  const [starredOnly, setStarredOnly] = useState(false);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [allTags, setAllTags] = useState<string[]>([]);
+  const [allFolders, setAllFolders] = useState<string[]>([]);
+
+  // Klasör ve etiketleri backend'den çek
+  const fetchAllTags = () => {
+    fetch("/api/tags").then(res => res.json()).then((data) => {
+      setAllTags(data.map((t: any) => t.name));
+    });
+  };
+  const fetchAllFolders = () => {
+    fetch("/api/folders").then(res => res.json()).then((data) => {
+      setAllFolders(data.map((f: any) => f.name));
+    });
+  };
+  useEffect(() => {
+    fetchAllTags();
+    fetchAllFolders();
+  }, []);
   // Paylaşım modalını aç
   const openShareModal = async (note: any) => {
     setShareNote(note);
     setShareModalOpen(true);
     setShareLoading(true);
-    // Eğer publicShareId yoksa oluştur
     if (!note.publicShareId) {
-      // Backend'de güncelle
       const newId = uuidv4();
       await fetch(`/api/notes/${note.id}/share`, {
         method: 'POST',
@@ -43,7 +94,6 @@ export default function NotesHistory() {
         body: JSON.stringify({ publicShareId: newId }),
       });
       setShareLink(`${window.location.origin}/paylas/${newId}`);
-      // Notları güncelle
       fetchNotes();
     } else {
       setShareLink(`${window.location.origin}/paylas/${note.publicShareId}`);
@@ -55,11 +105,6 @@ export default function NotesHistory() {
     setShareNote(null);
     setShareLink("");
   };
-  const [versionModalOpen, setVersionModalOpen] = useState(false);
-  const [versionNoteId, setVersionNoteId] = useState<string | null>(null);
-  const [versions, setVersions] = useState<any[]>([]);
-  const [versionLoading, setVersionLoading] = useState(false);
-  const [rollbackLoading, setRollbackLoading] = useState(false);
   // Sürüm geçmişini getir
   const openVersionModal = async (noteId: string) => {
     setVersionNoteId(noteId);
@@ -93,33 +138,6 @@ export default function NotesHistory() {
     closeVersionModal();
     fetchNotes();
   };
-  const { data: session } = useSession();
-  const [notes, setNotes] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [editId, setEditId] = useState<string | null>(null);
-  const [editTitle, setEditTitle] = useState("");
-  const [editSummary, setEditSummary] = useState("");
-  const [editTranscript, setEditTranscript] = useState("");
-  const [editTags, setEditTags] = useState("");
-  const [editFolder, setEditFolder] = useState("");
-  const [actionLoading, setActionLoading] = useState(false);
-  const [search, setSearch] = useState("");
-  const [tagFilter, setTagFilter] = useState("");
-  const [folderFilter, setFolderFilter] = useState("");
-  const [starredOnly, setStarredOnly] = useState(false);
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
-  const handleStarToggle = async (id: string, starred: boolean) => {
-    setActionLoading(true);
-    await fetch(`/api/notes/${id}/star`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ starred: !starred }),
-    });
-    fetchNotes();
-    setActionLoading(false);
-  };
-
   const fetchNotes = () => {
     setLoading(true);
     const params = new URLSearchParams();
@@ -133,28 +151,42 @@ export default function NotesHistory() {
       .then((data) => setNotes(data))
       .finally(() => setLoading(false));
   };
-
   useEffect(() => {
     if (!session?.user?.email) return;
     fetchNotes();
     // eslint-disable-next-line
   }, [session?.user?.email]);
-
-  // Filtreler değiştiğinde notları tekrar getir
   useEffect(() => {
     if (!session?.user?.email) return;
     fetchNotes();
     // eslint-disable-next-line
   }, [tagFilter, folderFilter, starredOnly, dateFrom, dateTo]);
-
-  const handleDelete = async (id: string) => {
-    if (!confirm("Bu notu silmek istediğinize emin misiniz?")) return;
+  const handleStarToggle = async (id: string, starred: boolean) => {
     setActionLoading(true);
-    await fetch(`/api/notes/${id}`, { method: "DELETE" });
+    await fetch(`/api/notes/${id}/star`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ starred: !starred }),
+    });
     fetchNotes();
     setActionLoading(false);
   };
-
+  const handleDelete = async (id: string) => {
+    if (!confirm("Bu notu silmek istediğinize emin misiniz?")) return;
+    setActionLoading(true);
+    try {
+      const res = await fetch(`/api/notes/${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        alert(data.error || "Not silinemedi. Lütfen tekrar deneyin.");
+      } else {
+        fetchNotes();
+      }
+    } catch (e) {
+      alert("Bir hata oluştu. Not silinemedi.");
+    }
+    setActionLoading(false);
+  };
   const handleEdit = (note: any) => {
     setEditId(note.id);
     setEditTitle(note.title || "");
@@ -163,7 +195,6 @@ export default function NotesHistory() {
     setEditTags(note.tags || "");
     setEditFolder(note.folder || "");
   };
-
   const handleEditSave = async (id: string) => {
     setActionLoading(true);
     await fetch(`/api/notes/${id}`, {
@@ -176,18 +207,21 @@ export default function NotesHistory() {
     setActionLoading(false);
   };
 
+
+  // Tüm hook'lar ve fonksiyonlar yukarıda, koşullu return en sonda
   if (!session?.user?.email) return null;
 
-  // Etiketleri ve klasörleri topla (tüm notlardan)
-  const allTags = Array.from(new Set(notes.flatMap(n => (n.tags || "").split(",").map((t: string) => t.trim()).filter(Boolean))));
-  const allFolders = Array.from(new Set(notes.map(n => n.folder || "Diğer").filter(Boolean)));
+
 
   // Sadece arama kutusu frontend'de filtreleniyor, diğer filtreler backend'den geliyor
   const filteredNotes = notes.filter(note => {
+    const s = search.toLowerCase();
     return (
       !search ||
-      note.summary.toLowerCase().includes(search.toLowerCase()) ||
-      note.transcript.toLowerCase().includes(search.toLowerCase())
+      (note.title && note.title.toLowerCase().includes(s)) ||
+      (note.summary && note.summary.toLowerCase().includes(s)) ||
+      (note.transcript && note.transcript.toLowerCase().includes(s)) ||
+      (note.tags && note.tags.toLowerCase().includes(s))
     );
   });
 
@@ -205,17 +239,21 @@ export default function NotesHistory() {
   return (
   <div className="my-4 max-w-full sm:max-w-xl mx-auto px-1">
       <h2 className="text-xl font-bold mb-4">🗂️ Not Geçmişim</h2>
-  <div className="flex flex-col sm:flex-row gap-2 mb-4 items-center w-full">
-        <label className="flex items-center gap-1 text-sm">
-          <input type="checkbox" checked={starredOnly} onChange={e => setStarredOnly(e.target.checked)} />
-          Sadece yıldızlılar
-        </label>
+      {/* Arama kutusu başlığın hemen altında, büyük ve öne çıkar */}
+      <div className="mb-4 flex justify-center w-full">
         <Input
           placeholder="Notlarda ara..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="sm:w-1/3"
+          className="w-full max-w-2xl h-14 text-lg px-6 py-4 bg-white text-black placeholder-gray-400 border-2 border-black focus:border-blue-500 focus:ring-2 focus:ring-blue-200 shadow-md rounded-xl"
         />
+      </div>
+      {/* Filtreler bir alt satırda */}
+      <div className="flex flex-col sm:flex-row gap-2 mb-4 items-center w-full">
+        <label className="flex items-center gap-1 text-sm">
+          <input type="checkbox" checked={starredOnly} onChange={e => setStarredOnly(e.target.checked)} />
+          Sadece yıldızlılar
+        </label>
         <select
           value={tagFilter}
           onChange={e => setTagFilter(e.target.value)}
@@ -312,7 +350,12 @@ export default function NotesHistory() {
                         )}
                         {note.questions && (
                           <>
-                            <div className="font-semibold mb-1">Sorular:</div>
+                            <div className="font-semibold mb-1 flex items-center gap-2">
+                              Sorular:
+                              <Button size="sm" variant="outline" className="border-black text-black px-2 py-0.5 text-xs" onClick={() => handleGenerateMoreQuestions(note)} disabled={actionLoading}>
+                                Daha fazla soru oluştur
+                              </Button>
+                            </div>
                             <div className="whitespace-pre-wrap text-gray-800 mb-2">{note.questions}</div>
                           </>
                         )}

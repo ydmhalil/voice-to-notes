@@ -1,3 +1,15 @@
+/* Not geçmişi arama kutusu ve tüm inputlar için görünürlük garantisi */
+input[type="text"], input:not([type]), .notlar-input, .notlar-input input {
+  background: #fff !important;
+  color: #111 !important;
+  border: 1.5px solid #222 !important;
+  min-width: 60px;
+  min-height: 36px;
+}
+input[type="text"]::placeholder, input:not([type])::placeholder, .notlar-input input::placeholder {
+  color: #888 !important;
+  opacity: 1 !important;
+}
 /* Header avatar (profile image or initial) daima beyaz arka plan ve koyu border */
 .header img,
 .header .user-avatar,

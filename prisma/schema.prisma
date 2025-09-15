@@ -55,7 +55,7 @@ model Note {
 model NoteVersion {
   id         String   @id @default(cuid())
   noteId     String
-  note       Note     @relation(fields: [noteId], references: [id])
+  note       Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
   transcript String
   summary    String
   tags       String
