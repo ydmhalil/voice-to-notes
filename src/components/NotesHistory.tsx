@@ -69,12 +69,20 @@ export default function NotesHistory() {
   // Klasör ve etiketleri backend'den çek
   const fetchAllTags = () => {
     fetch("/api/tags").then(res => res.json()).then((data) => {
-      setAllTags(data.map((t: any) => t.name));
+      if (Array.isArray(data)) {
+        setAllTags(data.map((t: any) => t.name));
+      } else {
+        setAllTags([]);
+      }
     });
   };
   const fetchAllFolders = () => {
     fetch("/api/folders").then(res => res.json()).then((data) => {
-      setAllFolders(data.map((f: any) => f.name));
+      if (Array.isArray(data)) {
+        setAllFolders(data.map((f: any) => f.name));
+      } else {
+        setAllFolders([]);
+      }
     });
   };
   useEffect(() => {

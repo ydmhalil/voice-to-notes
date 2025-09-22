@@ -29,10 +29,22 @@ export default function FolderTagManager() {
 
   // Klasör ve etiketleri getir
   const fetchFolders = () => {
-    fetch("/api/folders").then(res => res.json()).then(setFolders);
+    fetch("/api/folders").then(res => res.json()).then((data) => {
+      if (Array.isArray(data)) {
+        setFolders(data);
+      } else {
+        setFolders([]);
+      }
+    });
   };
   const fetchTags = () => {
-    fetch("/api/tags").then(res => res.json()).then(setTags);
+    fetch("/api/tags").then(res => res.json()).then((data) => {
+      if (Array.isArray(data)) {
+        setTags(data);
+      } else {
+        setTags([]);
+      }
+    });
   };
 
   useEffect(() => {

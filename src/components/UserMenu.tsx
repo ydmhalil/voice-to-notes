@@ -37,7 +37,11 @@ export default function UserMenu() {
 
   if (!session) {
     return (
-      <Button onClick={() => signIn("google")}>Google ile Giriş Yap</Button>
+      <Button onClick={() => signIn("google")}
+        className="bg-black text-white hover:bg-gray-900 border-black border"
+      >
+        Google ile Giriş Yap
+      </Button>
     );
   }
 
